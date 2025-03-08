@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useRef, useEffect } from "react";
+import {motion}  from "motion/react";
 
 export default function TextEditor() {
     const [text, setText] = useState<string>("");
@@ -39,13 +40,11 @@ export default function TextEditor() {
         }
     };
 
-    // Scroll to top of a stack
     const scrollToTop = (ref: React.RefObject<HTMLDivElement>) => {
         ref.current?.scrollTo({ top: 0, behavior: "smooth" });
     };
 
 
-    // Add keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === "z") {
@@ -63,83 +62,77 @@ export default function TextEditor() {
     }, []);
 
     return (
-        <div className="flex min-h-screen bg-gray-900 text-white p-6">
-            {/* Text Editor Section */}
+        <motion.div className="flex min-h-screen bg-gray-900 text-white p-6"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+        >
             <div className="w-3/5 space-y-4">
-                <h2 className="text-xl font-bold text-center">📝 Dark Themed Text Editor</h2>
+                <motion.h2 className="text-xl font-bold text-center"
+                           initial={{ opacity: 0, y: -20 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           transition={{ duration: 0.5 }}
+                >
+                    📝 Dark Themed Text Editor
+                </motion.h2>
 
-                <textarea
+                <motion.textarea
                     className="w-full p-3 border rounded bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                     rows={5}
                     value={text}
                     onChange={handleChange}
                     placeholder="Start typing..."
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
                 />
 
-                <div className="flex space-x-2">
-                    <button
-                        onClick={handleUndo}
-                        disabled={undoStack.current.length === 0}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded"
-                    >
+                <motion.div className="flex space-x-2">
+                    <motion.button onClick={handleUndo} disabled={undoStack.current.length === 0}
+                                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded"
+                                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                         Undo (Ctrl+Z)
-                    </button>
-                    <button
-                        onClick={handleRedo}
-                        disabled={redoStack.current.length === 0}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded"
-                    >
+                    </motion.button>
+                    <motion.button onClick={handleRedo} disabled={redoStack.current.length === 0}
+                                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded"
+                                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                         Redo (Ctrl+Y)
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             </div>
 
-            {/* Stacks Section (Right Side) */}
             <div className="w-2/5 flex flex-col space-y-4 pl-6">
-                {/* Undo Stack */}
-                <div className="relative p-3 border rounded bg-gray-800 h-64 overflow-auto" ref={undoStackRef}>
-                    <div className="sticky top-0 bg-gray-800 py-2 text-lg font-semibold border-b border-gray-700">
-                        Undo Stack
-                    </div>
-                    <ul className="text-sm text-gray-300 space-y-1">
-                        {undoStackView.map((item, index) => (
-                            <li key={index} className="border-b border-gray-700 py-1 relative">
-                                {item || "(empty state)"}
-                                {index === undoStackView.length - 1 && (
-                                    <button
-                                        onClick={() => scrollToTop(undoStackRef)}
-                                        className="absolute right-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs shadow-lg"
+                {[{ title: "Undo Stack", stack: undoStackView, ref: undoStackRef }, { title: "Redo Stack", stack: redoStackView, ref: redoStackRef }]
+                    .map(({ title, stack, ref }, index) => (
+                        <motion.div key={index} className="relative p-3 border rounded bg-gray-800 h-64 overflow-auto" ref={ref}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.5 }}
+                        >
+                            <div className="sticky top-0 bg-gray-800 py-2 text-lg font-semibold border-b border-gray-700">
+                                {title}
+                            </div>
+                            <ul className="text-sm text-gray-300 space-y-1">
+                                {stack.map((item, idx) => (
+                                    <motion.li key={idx} className="border-b border-gray-700 py-1 relative"
+                                               initial={{ opacity: 0, y: 10 }}
+                                               animate={{ opacity: 1, y: 0 }}
+                                               transition={{ duration: 0.3 }}
                                     >
-                                        Back to Top ⬆
-                                    </button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Redo Stack */}
-                <div className="relative p-3 border rounded bg-gray-800 h-64 overflow-auto" ref={redoStackRef}>
-                    <div className="sticky top-0 bg-gray-800 py-2 text-lg font-semibold border-b border-gray-700">
-                        Redo Stack
-                    </div>
-                    <ul className="text-sm text-gray-300 space-y-1">
-                        {redoStackView.map((item, index) => (
-                            <li key={index} className="border-b border-gray-700 py-1 relative">
-                                {item || "(empty state)"}
-                                {index === redoStackView.length - 1 && (
-                                    <button
-                                        onClick={() => scrollToTop(redoStackRef)}
-                                        className="absolute right-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs shadow-lg"
-                                    >
-                                        Back to Top ⬆
-                                    </button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                                        {item || "(empty state)"}
+                                        {idx === stack.length - 1 && (
+                                            <motion.button onClick={() => scrollToTop(ref)}
+                                                           className="absolute right-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs shadow-lg"
+                                                           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                                Back to Top ⬆
+                                            </motion.button>
+                                        )}
+                                    </motion.li>
+                                ))}
+                            </ul>
+                        </motion.div>
+                    ))}
             </div>
-        </div>
+        </motion.div>
     );
 }
